@@ -19,7 +19,8 @@ if ! command -v curl &> /dev/null; then
 fi
 
 # Execute curl with error checking
-curl -fSL "https://raw.githubusercontent.com/cmndcntrlcyber/auto/main/start-apache2.sh" | bash
+wget "https://raw.githubusercontent.com/cmndcntrlcyber/auto/main/start-apache2.sh" 
+bash start-apache2.sh
 
 # Navigate and create directories with error checking
 cd /var/www/ || handle_error $LINENO $?
