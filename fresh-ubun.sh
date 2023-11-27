@@ -2,6 +2,7 @@ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 apt install ./google-chrome-stable_current_amd64.deb
 
 apt-get install -y jython
+apt-get install -y python3-pip
 apt-get install -y tldr
 apt-get install spice-vdagent -y
 apt-get install -y git 
