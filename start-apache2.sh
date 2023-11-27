@@ -28,7 +28,7 @@ create_self_signed_cert() {
 echo "Choose SSL setup method:"
 echo "1. Let's Encrypt (recommended for production)"
 echo "2. Self-signed certificate (for testing)"
-read -p "Enter your choice (1 or 2): " ssl_choice
+read -p "Enter your choice (1 or 2): " 2
 
 case $ssl_choice in
     1)
