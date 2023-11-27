@@ -20,7 +20,7 @@ fi
 
 # Execute curl with error checking
 wget "https://raw.githubusercontent.com/cmndcntrlcyber/auto/main/start-apache2.sh" 
-bash start-apache2.sh
+#bash start-apache2.sh
 
 # Navigate and create directories with error checking
 cd /var/www/ || handle_error $LINENO $?
