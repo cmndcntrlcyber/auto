@@ -20,7 +20,24 @@ setup_lets_encrypt() {
 # Function to create a self-signed certificate
 create_self_signed_cert() {
     echo "Creating a self-signed SSL certificate..."
-    sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/apache-selfsigned.key -out /etc/ssl/certs/apache-selfsigned.crt
+    echo "You will be prompted to enter details for the certificate."
+
+    # Prompting user for details
+    read -p "Country Name (2 letter code) [XX]: " country
+    read -p "State or Province Name (full name) []: " state
+    read -p "Locality Name (eg, city) [Default City]: " locality
+    read -p "Organization Name (eg, company) [Default Company Ltd]: " organization
+    read -p "Organizational Unit Name (eg, section) []: " organizationalunit
+    read -p "Common Name (e.g. server FQDN or YOUR name) []: " commonname
+    read -p "Email Address []: " email
+
+    # Generating the certificate
+    sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout /etc/ssl/private/apache-selfsigned.key \
+        -out /etc/ssl/certs/apache-selfsigned.crt \
+        -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
+
+    echo "Self-signed certificate created."
     echo "Manually configure Apache2 to use the self-signed certificate..."
     echo "Edit the Apache configuration file, then enable the SSL module and site configuration."
 }
@@ -28,7 +45,7 @@ create_self_signed_cert() {
 echo "Choose SSL setup method:"
 echo "1. Let's Encrypt (recommended for production)"
 echo "2. Self-signed certificate (for testing)"
-read -p "Enter your choice (1 or 2): " 2
+read -p "Enter your choice (1 or 2): " ssl_choice
 
 case $ssl_choice in
     1)
