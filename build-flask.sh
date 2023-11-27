@@ -7,10 +7,10 @@ curl "https://raw.githubusercontent.com/cmndcntrlcyber/auto/main/start-apache2.s
 
 cd /var/www/; mkdir apps; cd apps
 git clone "https://github.com/cmndcntrl/ztsc.git"
-mv Landing2 $name
+mv ztsc $name
 cd $name;
 
-sed -i 's/$old_name/$name/g' 000-default.conf
+sed -i 's/ztsc/$name/g' 000-default.conf
 sudo a2ensite 000-default.conf
 python -m venv $name;  source $name/bin/activate # $name here begins representing the virutal environment
 curl "https://raw.githubusercontent.com/cmndcntrlcyber/auto/main/prep-flask-web.py" | python3
