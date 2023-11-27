@@ -12,7 +12,8 @@ pip_packages = [
     "Flask-SQLAlchemy",
     "psycopg2-binary",
     "Werkzeug",
-    "flask_wtf"
+    "flask_wtf",
+    "bcrypt"
 ]
 
 apt_packages = [
