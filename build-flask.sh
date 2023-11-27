@@ -1,5 +1,7 @@
 #!/bin/bash
 
+wget "https://raw.githubusercontent.com/cmndcntrlcyber/auto/main/fresh-ubun.sh" | bash -
+
 echo "What is the name of your app?"
 read name
 
