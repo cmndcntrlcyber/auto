@@ -12,8 +12,8 @@ pip_packages = [
     "Flask-SQLAlchemy",
     "psycopg2-binary",
     "Werkzeug",
-    "flask_wtf",
-    "bcrypt"
+    "Flask-WTF",     # Added Flask-WTF
+    "WTForms"        # Added WTForms
 ]
 
 apt_packages = [
