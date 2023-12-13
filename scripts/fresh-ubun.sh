@@ -38,6 +38,9 @@ if ask_to_install "General apt packages"; then
     apt-get install -y snapd 
     apt-get install -y npm 
     apt-get install -y default-jdk
+    apt-get install -y gccgo-go
+    apt-get install -y golang-go
+
 fi
 
 # Rust installation
@@ -50,7 +53,7 @@ fi
 
 # Go installation
 if ask_to_install "Go"; then
-    wget https://go.dev/dl/go1.20.4.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xvf go1.20.4.linux-amd64.tar.gz
+    wget wget https://golang.org/dl/go1.21.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xvf go1.21.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
 fi
