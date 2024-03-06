@@ -3,7 +3,7 @@ import subprocess
 import re
 
 # variables
-# stop_ollama_service = "systemctl stop ollama"
+# stop_ollama_service = "systemctl stop ollama" # commented out unless necessary
 
 start_ollama_docker = "docker run -d --gpus=all -v ollama:/root/.ollama -p 11434:11434 --name ollama-localhost ollama/ollama"
 
@@ -30,8 +30,7 @@ live_container2 = subprocess.check_output(find_live_container2, shell=True)
 output_str1 = live_container1.decode()
 output_str2 = live_container2.decode()
 
-print("OutputString1 = " + output_str1) 
-print("OutputString2 = " + output_str2) 
+print("OutputString1 = " + output_str1 + "::OutputString2 = " + output_str2) 
 
 stop_live_container1 = "docker stop " + output_str1
 rm_live_container1 = "docker rm " + output_str1
@@ -40,7 +39,7 @@ stop_live_container2 = "docker stop " + output_str2
 rm_live_container2 = "docker rm " + output_str2
 
 # stop ollama service
-#subprocess.run(stop_ollama_service, shell=True)
+# subprocess.run(stop_ollama_service, shell=True) # commented out unless necessary
 
 # stop & remove running container
 subprocess.run(stop_live_container1, shell=True)
