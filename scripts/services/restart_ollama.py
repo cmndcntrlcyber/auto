@@ -16,8 +16,8 @@ ollama_ip = match.group(1) if match else None
 if ollama_ip is not None:
     print("IP Address: ", ollama_ip)
 else:
-    print("No IP address found")
-    sys.exit()
+    subprocess.run(start_ollama_docker, shell=True)
+
 
 start_open_webui = "docker run -d -p 3000:8080 -e OLLAMA_API_BASE_URL=http://" + str(ollama_ip) + ":11434/api -v open-webui:/app/backend/data --name open-webui-localhost --restart always open-webui:latest"
 
@@ -51,3 +51,5 @@ subprocess.run(rm_live_container2, shell=True)
 # restart container
 subprocess.run(start_ollama_docker, shell=True)
 subprocess.run(start_open_webui, shell=True)
+
+subprocess.run(get_ollama_ip, shell=True)
