@@ -25,11 +25,9 @@ repos=(
     https://github.com/fuzzdb-project/fuzzdb.git
     https://github.com/The-Art-of-Hacking/h4cker.git
     https://github.com/OlivierLaflamme/Cheatsheet-God.git
-    https://github.com/danielmiessler/SecLists.git
     https://github.com/almandin/fuxploider.git
     https://github.com/EmpireProject/Empire.git
     https://github.com/BloodHoundAD/BloodHound.git
-    https://github.com/SecureAuthCorp/impacket.git
     https://github.com/samratashok/nishang.git
     https://github.com/Tib3rius/AutoRecon.git
     https://github.com/fin3ss3g0d/evilgophish.git
