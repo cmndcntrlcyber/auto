@@ -11,4 +11,5 @@ def generate_alphanumeric_password(length=12):
 
 # Generate and print a 12-character strong alphanumeric password
 generate_alphanumeric_password()
-print(generate_alphanumeric_password)
+
+print(generate_alphanumeric_password())

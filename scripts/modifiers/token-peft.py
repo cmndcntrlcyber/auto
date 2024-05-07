@@ -1,38 +1,35 @@
 import os
-from nltk import word_tokenize
-from docx import Document
+from pathlib import Path
+from python_docx import Document
 import pandas as pd
 
-def tokenize_text(text):
-    # Tokenizes the text and returns a list of tokens.
-    return word_tokenize(text)
+# Directory containing files to be processed
+dir_path = "/path/to/your/directory"
 
-def process_file(path, extension):
-    if extension == '.docx':
-        doc = Document(path)
-        fullText = []
-        for para in doc.paragraphs:
-            fullText.append(para.text)
-        return tokenize_text('\n'.join(fullText))
-    elif extension == '.txt':
-        with open(path, 'r') as file:
-            text = file.read()
-        return tokenize_text(text)
-    elif extension == '.csv':
-        df = pd.read_csv(path)
-        fullText = '\n'.join([str(x) for x in df.values])
-        return tokenize_text(fullText)
-    else:
-        print('Unsupported file type: ' + path)
-
-def main():
-    directory = './your-directory'  # replace with your directory
+for filename in os.listdir(dir_path):
+    file_path = os.path.join(dir_path, filename)
     
-    for filename in os.listdir(directory):
-        if filename.endswith('.docx') or filename.endswith('.txt') or filename.endswith('.csv'):
-            path = os.path.join(directory, filename)
-            tokens = process_file(path, extension=os.path.splitext(filename)[1])
-            print('Tokens for {}: {}'.format(filename, tokens))
-            
-if __name__ == "__main__":
-    main()
+    # Determine the output file based on file type
+    if Path(filename).suffix == '.docx':
+        output_file = "processed_" + filename.replace('.docx', '.txt')  # Replace .docx with .txt for txt files
+    elif Path(filename).suffix in ['.csv', '.txt']:
+        output_file = "processed_" + filename  
+        
+    with open(output_file, 'w') as out:
+        if Path(filename).suffix == '.docx':
+            doc = Document(file_path)
+            for paragraph in doc.paragraphs:
+                out.write(paragraph.text + '\n')
+                
+        elif Path(filename).suffix == '.txt':
+            with open(file_path, 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    out.write(line)  # Don't add a new line here, txt files already have them
+                    
+        elif Path(filename).suffix == '.csv':
+            df = pd.read_csv(file_path)
+            for col in df.columns:
+                for item in df[col]:
+                    if isinstance(item, str):
+                        out.write(item + '\n')  # Add a new line here to match txt files
