@@ -1,0 +1,43 @@
+class WebAgent:
+
+    def __init__(self, key):
+        self.key = key
+        self_cipher_suite = Fernet(self.key)
+
+    def get_url_data(self, url):
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                return response.content
+            else:
+                raise ValueError("Failed to retrieve data from the provided URL.")
+        except Exception as e:
+            print(f"An error occurred while retrieving data from {url}:", e)
+    
+    def decrypt_and_execute(self, encrypted_data):
+        try:
+            # ... implementation as before ...
+            pass
+        except Exception as e:
+            print("An error occurred during decryption or execution:", e)
+            
+    def _execute_content(self, content):
+        if not content:
+            raise ValueError("Decrypted data is empty.")
+        
+        try:
+            cmd = f"echo '{content}' | python -c 'print(\"Executing content:\")'"
+            executor = SecureExecutionEnvironment(cmd)
+            executor.start()
+            executor.join()  # Wait for execution to complete before accessing results.
+            
+            result = executor.get_output()
+
+            if 'stderr' in result:
+                print("Error executing content:", result['stderr'])
+            else:
+                print("Content executed successfully:")
+                print(result['stdout'])
+                
+        except Exception as e:
+            print(f"An error occurred while trying to execute the content: {e}")

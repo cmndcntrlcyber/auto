@@ -54,46 +54,61 @@ mv rustyneedle /payloads/rustyneedle
 pip3 install -r /github/impacket/requirements.txt
 cd /recon/impacket && python3 ./setup.py install
 
-echo 'alias vuln-init="sudo bash /recon/scanners/vuln.sh"' >> ~/.bashrc
-echo 'alias vuln-init="sudo bash /recon/scanners/vuln.sh"' >> ~/.zshrc
 
-echo 'alias recon ="cd /recon/"' >> ~/.bashrc
-echo 'alias recon="cd /recon/"' >> ~/.zshrc
+# Function to ask for user confirmation
+ask_to_install() {
+    while true; do
+        read -p "Do you want to install $1? (y/n): " yn
+        case $yn in
+            [Yy]* ) return 0;;
+            [Nn]* ) return 1;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+}
 
-echo 'alias scanners="cd /recon/scanners"' >> ~/.bashrc
-echo 'alias scanners="cd /recon/scanners"' >> ~/.zshrc
+# Google Chrome installation
+if ask_to_install "Google Chrome"; then
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    apt install ./google-chrome-stable_current_amd64.deb
+fi
 
-echo 'alias payloads="cd /payloads"' >> ~/.bashrc
-echo 'alias payloads="cd /payloads"' >> ~/.zshrc
+# General apt packages installation
+if ask_to_install "General apt packages"; then
+    apt-get install -y jython
+    apt-get install -y python3-pip
+    apt-get install -y python-is-python3
+    apt-get install -y python3-virtualenv
+    apt-get install -y tldr
+    apt-get install spice-vdagent -y
+    apt-get install -y git 
+    apt-get install -y containerd
+    apt-get install -y docker.io 
+    apt-get install -y docker-compose 
+    apt-get install -y ca-certificates 
+    apt-get install -y certbot 
+    apt-get install -y curl 
+    apt-get install -y gnupg 
+    apt-get install -y lsb-release 
+    apt-get install -y snapd 
+    apt-get install -y npm 
+    apt-get install -y default-jdk
+    apt-get install -y gccgo-go
+    apt-get install -y golang-go
 
-echo 'alias bounty="cd /targets/bounty"' >> ~/.bashrc
-echo 'alias bounty="cd /targets/bounty"' >> ~/.zshrc
+fi
 
-echo 'alias targets="cd /targets"' >> ~/.bashrc
-echo 'alias targets="cd /targets"' >> ~/.zshrc
+# Rust installation
+if ask_to_install "Rust"; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    source "$HOME/.cargo/env"
+    rustup target add x86_64-pc-windows-gnu
+    sudo apt-get install -y gcc-mingw-w64-x86-64
+fi
 
-echo 'alias files="cd /"' >> ~/.bashrc
-echo 'alias files="cd /"' >> ~/.zshrc
-
-echo 'alias "$user-vpn"="openvpn /vpns/$user.ovpn"' >> ~/.bashrc
-echo 'alias "$user-vpn"="openvpn /vpns/$user.ovpn"' >> ~/.zshrc
-
-echo 'alias "htb-lab-vpn"="openvpn /vpns/lab_cmndcntrl.ovpn"' >> ~/.bashrc
-echo 'alias "htb-lab-vpn"="openvpn /vpns/lab_cmndcntrl.ovpn"' >> ~/.zshrc
-
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-apt install ./google-chrome-stable_current_amd64.deb
-
-sudo apt install -y certbot python3-certbot-apache default-jdk jython tldr spice-vdagent git containerd docker.io docker-compose ca-certificates certbot curl gnupg lsb-release snapd npm 
-
-sudo apt install -y certbot python3-certbot-apache default-jdk
-
-#Install Rust and include crates for Windows Binaries
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source "$HOME/.cargo/env"
-rustup target add x86_64-pc-windows-gnu
-sudo apt-get install -y gcc-mingw-w64-x86-64
-
-wget https://go.dev/dl/go1.20.4.linux-amd64.tar.gz
-sudo tar -C /usr/local -xvf go1.20.4.linux-amd64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
+# Go installation
+if ask_to_install "Go"; then
+    wget wget https://golang.org/dl/go1.21.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xvf go1.21.linux-amd64.tar.gz
+    export PATH=$PATH:/usr/local/go/bin
+fi

@@ -1,36 +1,50 @@
-import subprocess
-import os
-from pathlib import Path
-from lxml import etree
+import subprocess, os, shutil
 
-def run_nmap_scan(target, ports, name, scan_type, extra_args=""):
-    filename = f"vuln.{scan_type}.{name}.xml"
-    html_filename = filename.replace('.xml', '.html')
-    nmap_command = f"sudo nmap {target} {ports} -f -T5 -v5 -Pn -sV -sC -O {extra_args} -oX {filename}"
-    subprocess.run(nmap_command, shell=True)
-    xsltproc_command = f"xsltproc {filename} -o {html_filename}"
-    subprocess.run(xsltproc_command, shell=True)
-    os.remove(filename)
+type = input("What type of target is this? ")
+target = input("What's the IP range of your target? ")
+name = input("What's the name of your target? ")
 
-def main():
-    target = input("What's the IP range of your target? ")
-    ports = input("Which ports? ")
-    name = input("What's the name of your target? ")
-    print(f"The target is {target}, the ports are: {ports}, and the target/file name will be: {name}")
+def nmap_command(target):
+    # Run the nmap command and capture its output
+    output = subprocess.check_output(['nmap', '-p-', '--min-rate=1000', '-T4', target])
+    # Find lines containing a port number
+    ports = [line.strip().split('/')[0] for line in output.decode('utf-8').split('\n') if '/' in line]
+    return ','.join(ports)
 
-    base_path = Path(f"/home/<USERNAME>/rslts/{name}/vuln")
-    base_path.mkdir(parents=True, exist_ok=True)
-    os.chdir(base_path)
+output = subprocess.check_output(['nmap', '-p-', '--min-rate=1000', '-T4', target])
+# Find lines containing a port number
+ports = [line.strip().split('/')[0] for line in output.decode('utf-8').split('\n') if '/' in line]
 
-    run_nmap_scan(target, ports, name, "smb-brute", "--script smb-brute.nse")
-    run_nmap_scan(target, ports, name, "init")
-    run_nmap_scan(target, ports, name, "vulners", "--script vulners --script-args mincvss=5.0")
-    run_nmap_scan(target, ports, name, "dns-enum", "--script dns-srv-enum  --script-args 'dns-srv-enum.domain'")
-    run_nmap_scan(target, ports, name, "exploit", "--script exploit --script-args 'exploit.intensive'")
-    run_nmap_scan(target, ports, name, "http-enum", "--script http-enum --script-args 'http-enum.category'")
-    run_nmap_scan(target, ports, name, "ssh-pubkey", "--script ssh-publickey-acceptance")
+print("Making the Directories")
 
-    print("Done!")
+output_directory = "./targets/" + type + "/" + name  # Replace with your desired output directory path
+if not os.path.exists(output_directory):
+    print("Output directory does not exist.")
+else:
+    for file in os.listdir(os.getcwd()):
+        if os.path.isfile(file) and "output" in file:  # Adjust the file filter as needed
+            shutil.move(file, output_directory)
 
-if __name__ == "__main__":
-    main()
+os.makedirs("/targets/" + type)
+os.makedirs("/targets/" + type + "/" + name)
+os.system("cp -r /engaged /targets/" + type + "/" + name)
+os.chdir("/targets/" + type + "/" + name + "/engaged/recon/")
+
+print("The target is " + target + " and the ports are: " + ports)
+
+nmap_command('echo "' + target + ' ' + name + '" | sudo tee -a /etc/hosts')
+
+# Run Nmap scans based on the ports provided by the nmap_command function
+nmap_command('sudo nmap ' + target + ' -p' + ports + ' -T5 -v5 -sV -O --script ssl-cert -oX vuln.smb-brute.' + name + '.xml')
+os.remove("vuln.smb-brute." + name + ".xml")
+
+nmap_command('sudo nmap ' + target + ' -p' + ports + ' -T5 -v5 -sV -O --script exploit --script-args "exploit.intensive" -oX vuln.exploit.' + name + '.xml')
+os.remove("vuln.exploit." + name + ".xml")
+
+nmap_command('sudo nmap ' + target + ' -p' + ports + ' -T5 -v5 -sV -O --script http-enum --script-args "http-enum.category" -oX vuln.http-enum.' + name + '.xml')
+os.remove("vuln.http-enum." + name + ".xml")
+
+nmap_command('sudo nmap ' + target + ' -p' + ports + ' -T5 -v5 -sV -O --script ssh-publickey-acceptance -oX vuln.ssh-pubkey.' + name + '.xml')
+os.remove("vuln.ssh-pubkey." + name + ".xml")
+
+print("Done!")

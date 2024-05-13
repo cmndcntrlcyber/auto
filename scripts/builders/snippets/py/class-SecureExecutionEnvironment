@@ -1,0 +1,16 @@
+from subprocess import Popen, PIPE
+
+
+class SecureExecutionEnvironment(threading.Thread):
+
+    def __init__(self, command):
+        super().__init__()
+        self.command = command
+        self.output = None
+
+    def run(self):
+        process = Popen(self.command, stdout=PIPE, stderr=PIPE, text=True)
+        (self.stdout, self.stderr) = process.communicate()
+
+    def get_output(self):
+        return {'stdout': self.stdout, 'stderr': self.stderr}
