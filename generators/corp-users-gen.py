@@ -13,7 +13,7 @@ last_names = [
 
 # Check if the domain argument is provided
 if len(sys.argv) < 2:
-    print("Usage: python corp-users.py <domain>")
+    print("Usage: python corp-users-gen.py <domain>")
     sys.exit(1)
 
 # Get the domain from the command-line arguments
@@ -30,7 +30,7 @@ names_dataset = names_dataset[:200]
 
 def generate_email(first_name, last_name, domain):
     """Generate email address in the format 'firstinitial<lastname>@<domain>'"""
-    return f"{first_name[0].lower()}{last_name.lower()}@{domain}"
+    return f"{first_name[0].lower()}{last_name.lower()}+TEST@{domain}"
 
 # Generate a list of generated emails using names from dataset
 generated_emails = [generate_email(first, last, domain) for first, last in names_dataset]
