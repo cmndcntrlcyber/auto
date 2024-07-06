@@ -22,21 +22,22 @@ domain = sys.argv[1]
 # Generate pairs of first and last names
 names_dataset = [(first, last) for first in first_names for last in last_names]
 
-def generate_email(first_name, last_name):
+# Shuffle the dataset to randomize the pairs
+random.shuffle(names_dataset)
+
+# Limit the generated emails to 200
+names_dataset = names_dataset[:200]
+
+def generate_email(first_name, last_name, domain):
     """Generate email address in the format 'firstinitial<lastname>@<domain>'"""
     return f"{first_name[0].lower()}{last_name.lower()}@{domain}"
 
 # Generate a list of generated emails using names from dataset
-generated_emails = [generate_email(first, last) for first, last in names_dataset]
-
-# Print the generated email addresses
-print("Generated email addresses:")
-for email in generated_emails:
-    print(email)
+generated_emails = [generate_email(first, last, domain) for first, last in names_dataset]
 
 # Write the generated email addresses to a file
-with open("<domain>_list.txt", "w") as file:
+with open("corp_list.txt", "w") as file:
     for email in generated_emails:
         file.write(email + "\n")
 
-print("Generated email addresses have been written to <domain>_list.txt")
+print(f"Generated email addresses have been written to corp_list.txt with domain {domain}")
