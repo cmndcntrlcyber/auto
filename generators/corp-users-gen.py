@@ -30,13 +30,13 @@ names_dataset = names_dataset[:200]
 
 def generate_email(first_name, last_name, domain):
     """Generate email address in the format 'firstinitial<lastname>@<domain>'"""
-    return f"{first_name[0].lower()}{last_name.lower()}+TEST@{domain}"
+    return f"{first_name[0].lower()}{last_name.lower()}@{domain}"
 
 # Generate a list of generated emails using names from dataset
 generated_emails = [generate_email(first, last, domain) for first, last in names_dataset]
 
 # Write the generated email addresses to a file
-with open("corp_list.txt", "w") as file:
+with open(f"{domain}_corp_list.txt", "w") as file:
     for email in generated_emails:
         file.write(email + "\n")
 
