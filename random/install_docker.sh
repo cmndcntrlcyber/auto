@@ -1,40 +1,28 @@
 #!/usr/bin/bash
 
-if [ "$(id --user)" -ne "0" ];then
-    printf "This script requires root priviledges\n"
-    exit 1
-fi
+echo "Remove Conflicting Packages:"
+echo "-------------------------------------"
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
-OS_NAME=$(source /etc/os-release && echo "$ID_LIKE")
-if [ -z "$OS_NAME" ]; then
-    OS_NAME=$(source /etc/os-release && echo "$ID")
-    OS_CODENAME=$(source /etc/os-release && echo "$VERSION_CODENAME")
-else
-    if [ "$OS_NAME" == "debian" ];then
-        OS_CODENAME='bookworm'
-    else
-        OS_CODENAME='mantic'
-    fi
-fi
-OS_ARCH=$(dpkg --print-architecture)
 
-apt-get install -y curl gnupg
-curl -fsSL "https://download.docker.com/linux/${OS_NAME}/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-chmod a+r /etc/apt/keyrings/docker.gpg
+echo "Add Docker's official GPG key:"
+echo "-------------------------------------"
 
-(cat > "/etc/apt/sources.list.d/docker.sources") <<EOF
-Architectures: ${OS_ARCH}
-Enabled: yes
-X-Repolib-Name: docker
-Signed-By: /etc/apt/keyrings/docker.gpg
-Suites: ${OS_CODENAME}
-Components: stable
-Trusted: yes
-Types: deb
-URIs: https://download.docker.com/linux/${OS_NAME}
-EOF
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-apt-get update -y
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+echo "Adding the repository to Apt sources:"
+echo "-------------------------------------"
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
 
-exit 0
+echo "Installing the Latest Version"
+echo "-------------------------------------"
+
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
