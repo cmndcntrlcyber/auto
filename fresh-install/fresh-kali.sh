@@ -56,46 +56,27 @@ mv rustyneedle /payloads/rustyneedle
 pip3 install -r /github/impacket/requirements.txt
 cd /recon/impacket && python3 ./setup.py install
 
-echo 'alias vuln-init="sudo bash /recon/scanners/vuln.sh"' >> ~/.bashrc
-echo 'alias vuln-init="sudo bash /recon/scanners/vuln.sh"' >> ~/.zshrc
-
-echo 'alias recon ="cd /recon/"' >> ~/.bashrc
-echo 'alias recon="cd /recon/"' >> ~/.zshrc
-
-echo 'alias scanners="cd /recon/scanners"' >> ~/.bashrc
-echo 'alias scanners="cd /recon/scanners"' >> ~/.zshrc
-
-echo 'alias payloads="cd /payloads"' >> ~/.bashrc
-echo 'alias payloads="cd /payloads"' >> ~/.zshrc
-
-echo 'alias bounty="cd /targets/bounty"' >> ~/.bashrc
-echo 'alias bounty="cd /targets/bounty"' >> ~/.zshrc
-
-echo 'alias targets="cd /targets"' >> ~/.bashrc
-echo 'alias targets="cd /targets"' >> ~/.zshrc
-
-echo 'alias files="cd /"' >> ~/.bashrc
-echo 'alias files="cd /"' >> ~/.zshrc
-
-echo 'alias "$user-vpn"="openvpn /vpns/$user.ovpn"' >> ~/.bashrc
-echo 'alias "$user-vpn"="openvpn /vpns/$user.ovpn"' >> ~/.zshrc
-
-echo 'alias "htb-lab-vpn"="openvpn /vpns/lab_cmndcntrl.ovpn"' >> ~/.bashrc
-echo 'alias "htb-lab-vpn"="openvpn /vpns/lab_cmndcntrl.ovpn"' >> ~/.zshrc
 
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 apt install ./google-chrome-stable_current_amd64.deb
 
-sudo apt install -y certbot python3-certbot-apache default-jdk jython tldr spice-vdagent git containerd docker.io docker-compose ca-certificates certbot curl gnupg lsb-release snapd npm 
+# Install Docker
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-sudo apt install -y certbot python3-certbot-apache default-jdk
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+sudo apt install -y certbot python3-certbot-apache default-jdk jython tldr spice-vdagent git docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin ca-certificates certbot curl gnupg lsb-release snapd npm golang
 
 #Install Rust and include crates for Windows Binaries
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 rustup target add x86_64-pc-windows-gnu
 sudo apt-get install -y gcc-mingw-w64-x86-64
-
-wget https://go.dev/dl/go1.20.4.linux-amd64.tar.gz
-sudo tar -C /usr/local -xvf go1.20.4.linux-amd64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
