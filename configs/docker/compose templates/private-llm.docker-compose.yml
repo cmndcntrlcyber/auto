@@ -1,0 +1,67 @@
+name: private_llm
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama-localhost
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "3000:8080"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - open-webui:/app/backend/data
+    restart: always
+
+  pipelines:
+    image: ghcr.io/open-webui/pipelines:main
+    container_name: pipelines
+    ports:
+      - "9099:9099"
+    environment:
+      - PIPELINES_URLS=https://github.com/open-webui/pipelines/blob/main/examples/filters/detoxify_filter_pipeline.py
+    volumes:
+      - pipelines:/app/pipelines
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  ollama:
+    external: true
+    name: ollama
+  open-webui:
+    external: true
+    name: open-webui
+  pipelines:
+    external: true
+    name: pipelines
