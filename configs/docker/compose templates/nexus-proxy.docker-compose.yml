@@ -1,0 +1,69 @@
+name: nexus-proxy
+services:
+    squid:
+        image: sameersbn/squid:latest
+        container_name: squid_proxy
+        ports:
+            - 8080:8080
+            - 8443:8443
+            - 66666:66666
+        volumes:
+            - ./squid.conf:/etc/squid/squid.conf
+            - squid_cache:/var/spool/squid
+        restart: unless-stopped
+    volumes:
+        squid_cache: 
+    n-p-m:
+        image: jc21/nginx-proxy-manager:latest
+        restart: unless-stopped
+        ports:
+            - 80:80
+            - 443:443
+            - 81:81
+        environment:
+            DB_MYSQL_HOST: db
+            DB_MYSQL_PORT: 3306
+            DB_MYSQL_USER: npm
+            DB_MYSQL_PASSWORD: "npm" # change to pass at line 41
+            DB_MYSQL_NAME: npm
+        volumes:
+            - ./data:/data
+            - ./letsencrypt:/etc/letsencrypt
+        depends_on:
+            - db
+    maria-db:
+        image: jc21/mariadb-aria:latest
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: npm
+            MYSQL_DATABASE: npm
+            MYSQL_USER: npm
+            MYSQL_PASSWORD: npm
+        volumes:
+            - ./mysql:/var/lib/mysql
+    pihole:
+        container_name: pihole
+        image: pihole/pihole:latest
+        ports:
+            - 53:53/tcp
+            - 53:53/udp
+            - 67:67/udp
+            - 8090:80/tcp
+        environment:
+            TZ: America/Chicago
+        volumes:
+            - ./etc-pihole:/etc/pihole
+            - ./etc-dnsmasq.d:/etc/dnsmasq.d
+        cap_add:
+            - NET_ADMIN
+        restart: unless-stopped
+    nginx:
+        ports:
+            - 80:80
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+        restart: always
+        logging:
+            options:
+                max-size: 1g
+        image: nginx
