@@ -78,10 +78,6 @@ if ask_to_install "Rust"; then
     rustup target add x86_64-pc-windows-gnu
     sudo apt-get install -y gcc-mingw-w64-x86-64
 fi
-
-# Go installation
-if ask_to_install "Go"; then
-    wget wget https://golang.org/dl/go1.21.linux-amd64.tar.gz
     sudo tar -C /usr/local -xvf go1.21.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
 fi
