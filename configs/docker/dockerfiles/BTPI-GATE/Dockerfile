@@ -22,6 +22,7 @@ RUN apk add curl
 RUN apk add wget
 RUN apk add sudo
 RUN mkdir /opt/btpi-gate/
+RUN echo = "127.0.0.1   {$PREFIX}-cti {$PREFIX}-cti-mgmt {$PREFIX}-cti-waf {$PREFIX}-cti-"
 
 #-------------------------------
 ## Install portainer
@@ -42,6 +43,26 @@ RUN apk add bash tar curl
 RUN curl https://raw.githubusercontent.com/cmndcntrlcyber/btpi-react/refs/heads/main/kasm/install_kasm.sh > /opt/btpi-gate/install_kasm.sh
 RUN bash /opt/btpi-gate/install_kasm.sh
 
+#---------------------------------
+# Install Google Rapid Response
+WORKDIR "/opt"
+RUN apk add bash tar curl
+
+## Automated Install
+RUN curl https://github.com/cmndcntrlcyber/btpi-nexus/grr/install_grr.sh > /opt/btpi-nexus/install_grr.sh
+RUN bash /opt/btpi-nexus/install_grr.sh
+#---------------------------------
+
+#-------------------------------
+# Install Safeline WAF
+
+WORKDIR "/opt"
+RUN apk add bash tar curl
+
+## Automated Install
+RUN curl https://raw.githubusercontent.com/cmndcntrlcyber/btpi-gate/refs/heads/main/safeline/install_safeline.sh > /opt/btpi-gate/install_safeline.sh
+RUN bash /opt/btpi-gate/install_safeline.sh
+#-------------------------------
 
 ######### End Customizations ###########
 
