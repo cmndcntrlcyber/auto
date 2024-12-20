@@ -22,7 +22,7 @@ RUN apk add curl
 RUN apk add wget
 RUN apk add sudo
 RUN mkdir /opt/btpi-gate/
-RUN echo = "127.0.0.1   {$PREFIX}-cti {$PREFIX}-cti-mgmt {$PREFIX}-cti-waf {$PREFIX}-cti-"
+RUN echo = "127.0.0.1   {$PREFIX}-gate {$PREFIX}-gate-mgmt {$PREFIX}-gate-waf {$PREFIX}-gate-grr-g"
 
 #-------------------------------
 ## Install portainer
