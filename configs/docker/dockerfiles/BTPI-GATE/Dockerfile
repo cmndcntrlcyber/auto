@@ -25,6 +25,14 @@ RUN mkdir /opt/btpi-gate/
 RUN echo = "127.0.0.1   {$PREFIX}-gate {$PREFIX}-gate-mgmt {$PREFIX}-gate-waf {$PREFIX}-gate-grr-g"
 
 #-------------------------------
+## Prep the Environment
+WORKDIR "/opt"
+RUN apk add bash tar curl
+RUN curl https://raw.githubusercontent.com/cmndcntrlcyber/btpi-gate/refs/heads/main/portainer/install_portainer.sh > /opt/btpi-gate/portainer/install_portainer.sh
+RUN sudo bash /opt/btpi-gate/portainer/install_portainer.sh
+#-------------------------------
+
+#-------------------------------
 ## Install portainer
 WORKDIR "/opt"
 RUN apk add bash tar curl
