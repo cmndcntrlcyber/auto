@@ -32,7 +32,7 @@ WORKDIR "/opt"
 RUN apk add bash tar curl
 RUN touch /opt/btpi-gate/fresh_btpi.sh
 RUN sudo curl https://raw.githubusercontent.com/cmndcntrlcyber/auto/refs/heads/main/fresh/fresh-btpi.sh >> /opt/btpi-gate/fresh_btpi.sh
-RUN sudo bash /opt/btpi-gate/fresh_ubun_btpi.sh
+RUN sudo bash /opt/btpi-gate/fresh_btpi.sh
 #-------------------------------
 
 #-------------------------------
