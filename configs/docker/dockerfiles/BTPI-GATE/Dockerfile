@@ -1,5 +1,7 @@
-FROM kasmweb/remnux-focal-desktop:1.16.1
+FROM docker:dind
 USER root
+
+CMD ["dockerd"]
 
 ENV HOME /home/kasm-default-profile
 ENV STARTUPDIR /dockerstartup
@@ -28,15 +30,15 @@ RUN echo = "127.0.0.1   {$PREFIX}-gate {$PREFIX}-gate-mgmt {$PREFIX}-gate-waf {$
 ## Prep the Environment
 WORKDIR "/opt"
 RUN apk add bash tar curl
-RUN curl https://raw.githubusercontent.com/cmndcntrlcyber/btpi-gate/refs/heads/main/portainer/install_portainer.sh > /opt/btpi-gate/portainer/install_portainer.sh
-RUN sudo bash /opt/btpi-gate/portainer/install_portainer.sh
+RUN sudo curl https://raw.githubusercontent.com/cmndcntrlcyber/auto/refs/heads/main/fresh/fresh-btpi.sh > /opt/btpi-gate/fresh_btpi.sh
+RUN sudo bash /opt/btpi-gate/fresh_ubun_btpi.sh
 #-------------------------------
 
 #-------------------------------
 ## Install portainer
 WORKDIR "/opt"
 RUN apk add bash tar curl
-RUN curl https://raw.githubusercontent.com/cmndcntrlcyber/btpi-gate/refs/heads/main/portainer/install_portainer.sh > /opt/btpi-gate/portainer/install_portainer.sh
+RUN sudo curl https://raw.githubusercontent.com/cmndcntrlcyber/btpi-gate/refs/heads/main/portainer/install_portainer.sh > /opt/btpi-gate/portainer/install_portainer.sh
 RUN sudo bash /opt/btpi-gate/portainer/install_portainer.sh
 #-------------------------------
 

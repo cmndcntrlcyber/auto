@@ -1,10 +1,11 @@
 #!/bin/bash
+RETURN_Y=y
 
 # Function to ask for user confirmation
 ask_to_install() {
     while true; do
         read -p "Do you want to install $1? (y/n): " yn
-        case $yn in
+        case RETURN_Y in
             [Yy]* ) return 0;;
             [Nn]* ) return 1;;
             * ) echo "Please answer yes or no.";;
@@ -12,11 +13,6 @@ ask_to_install() {
     done
 }
 
-# Google Chrome installation
-if ask_to_install "Google Chrome"; then
-    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    apt install ./google-chrome-stable_current_amd64.deb
-fi
 
 # General apt packages installation
 if ask_to_install "General apt packages"; then
@@ -67,12 +63,4 @@ if ask_to_install "Docker"; then
     echo "-------------------------------------"
 
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-fi
-
-# Rust installation
-if ask_to_install "Rust"; then
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-    source "$HOME/.cargo/env"
-    rustup target add x86_64-pc-windows-gnu
-    sudo apt-get install -y gcc-mingw-w64-x86-64
 fi
