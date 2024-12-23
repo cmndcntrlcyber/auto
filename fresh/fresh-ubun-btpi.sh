@@ -24,8 +24,6 @@ if ask_to_install "General apt packages"; then
     apt-get install -y python3-pip
     apt-get install -y python-is-python3
     apt-get install -y python3-virtualenv
-    apt-get install -y tldr
-    apt-get install spice-vdagent -y
     apt-get install -y git 
     apt-get install -y containerd
     apt-get install -y ca-certificates 
