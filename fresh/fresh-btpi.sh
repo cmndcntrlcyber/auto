@@ -1,6 +1,7 @@
 #!/bin/bash
 
-apt-get update -y
+apt-get update
+apt upgrade -y
 apt-get install -y jython
 apt-get install -y python3-pip
 apt-get install -y python-is-python3
