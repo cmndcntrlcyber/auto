@@ -25,11 +25,9 @@ if ask_to_install "General apt packages"; then
     apt-get install -y python-is-python3
     apt-get install -y python3-virtualenv
     apt-get install -y tldr
-    apt-get install spice-vdagent -y
+    apt-get install -y spice-vdagent 
     apt-get install -y git 
     apt-get install -y containerd
-    apt-get install -y docker.io 
-    apt-get install -y docker-compose 
     apt-get install -y ca-certificates 
     apt-get install -y certbot 
     apt-get install -y curl 
@@ -43,17 +41,40 @@ if ask_to_install "General apt packages"; then
 
 fi
 
+#Docker Installation
+if ask_to_install "Docker"; then
+    echo "Remove Conflicting Packages:"
+    echo "-------------------------------------"
+    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+
+
+    echo "Add Docker's official GPG key:"
+    echo "-------------------------------------"
+
+    sudo apt-get update
+    sudo apt-get install -y ca-certificates curl
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+    echo "Adding the repository to Apt sources:"
+    echo "-------------------------------------"
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+
+    echo "Installing the Latest Version"
+    echo "-------------------------------------"
+
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+fi
+
 # Rust installation
 if ask_to_install "Rust"; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     source "$HOME/.cargo/env"
     rustup target add x86_64-pc-windows-gnu
     sudo apt-get install -y gcc-mingw-w64-x86-64
-fi
-
-# Go installation
-if ask_to_install "Go"; then
-    wget wget https://golang.org/dl/go1.21.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xvf go1.21.linux-amd64.tar.gz
-    export PATH=$PATH:/usr/local/go/bin
 fi

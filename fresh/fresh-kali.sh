@@ -25,9 +25,11 @@ repos=(
     https://github.com/fuzzdb-project/fuzzdb.git
     https://github.com/The-Art-of-Hacking/h4cker.git
     https://github.com/OlivierLaflamme/Cheatsheet-God.git
+    https://github.com/danielmiessler/SecLists.git
     https://github.com/almandin/fuxploider.git
     https://github.com/EmpireProject/Empire.git
     https://github.com/BloodHoundAD/BloodHound.git
+    https://github.com/SecureAuthCorp/impacket.git
     https://github.com/samratashok/nishang.git
     https://github.com/Tib3rius/AutoRecon.git
     https://github.com/fin3ss3g0d/evilgophish.git
@@ -55,53 +57,26 @@ pip3 install -r /github/impacket/requirements.txt
 cd /recon/impacket && python3 ./setup.py install
 
 
-# Function to ask for user confirmation
-ask_to_install() {
-    while true; do
-        read -p "Do you want to install $1? (y/n): " yn
-        case $yn in
-            [Yy]* ) return 0;;
-            [Nn]* ) return 1;;
-            * ) echo "Please answer yes or no.";;
-        esac
-    done
-}
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+apt install ./google-chrome-stable_current_amd64.deb
 
-# Google Chrome installation
-if ask_to_install "Google Chrome"; then
-    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    apt install ./google-chrome-stable_current_amd64.deb
-fi
+# Install Docker
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-# General apt packages installation
-if ask_to_install "General apt packages"; then
-    apt-get install -y jython
-    apt-get install -y python3-pip
-    apt-get install -y python-is-python3
-    apt-get install -y python3-virtualenv
-    apt-get install -y tldr
-    apt-get install spice-vdagent -y
-    apt-get install -y git 
-    apt-get install -y containerd
-    apt-get install -y docker.io 
-    apt-get install -y docker-compose 
-    apt-get install -y ca-certificates 
-    apt-get install -y certbot 
-    apt-get install -y curl 
-    apt-get install -y gnupg 
-    apt-get install -y lsb-release 
-    apt-get install -y snapd 
-    apt-get install -y npm 
-    apt-get install -y default-jdk
-    apt-get install -y gccgo-go
-    apt-get install -y golang-go
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
 
-fi
+sudo apt install -y certbot python3-certbot-apache default-jdk jython tldr spice-vdagent git docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin ca-certificates certbot curl gnupg lsb-release snapd npm golang
 
-# Rust installation
-if ask_to_install "Rust"; then
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-    source "$HOME/.cargo/env"
-    rustup target add x86_64-pc-windows-gnu
-    sudo apt-get install -y gcc-mingw-w64-x86-64
-fi
+#Install Rust and include crates for Windows Binaries
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+rustup target add x86_64-pc-windows-gnu
+sudo apt-get install -y gcc-mingw-w64-x86-64
