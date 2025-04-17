@@ -1,0 +1,178 @@
+version: '3.8'
+
+networks:
+  devops_network:
+    driver: bridge
+
+volumes:
+  gitea_data:
+  gitea_config:
+  drone_data:
+  portainer_data:
+  kasm_db:
+  kasm_profiles:
+  kasm_www:
+  redis_data:
+
+services:
+  # Gitea - Git server
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__server__ROOT_URL=http://gitea:3000/
+      - GITEA__server__DOMAIN=gitea
+    volumes:
+      - gitea_data:/data
+      - gitea_config:/etc/gitea
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "222:22"
+    restart: unless-stopped
+    networks:
+      - devops_network
+
+  # Drone Server
+  drone-server:
+    image: drone/drone:latest
+    container_name: drone-server
+    environment:
+      - DRONE_GITEA_SERVER=http://gitea:3000
+      - DRONE_GITEA_CLIENT_ID=your-gitea-oauth2-client-id
+      - DRONE_GITEA_CLIENT_SECRET=your-gitea-oauth2-client-secret
+      - DRONE_RPC_SECRET=your-drone-rpc-secret
+      - DRONE_SERVER_HOST=drone-server:8080
+      - DRONE_SERVER_PROTO=http
+      - DRONE_USER_CREATE=username:your-admin-username,admin:true
+    volumes:
+      - drone_data:/data
+    ports:
+      - "8080:80"
+    depends_on:
+      - gitea
+    restart: unless-stopped
+    networks:
+      - devops_network
+
+  # Drone Runner
+  drone-runner:
+    image: drone/drone-runner-docker:latest
+    container_name: drone-runner
+    environment:
+      - DRONE_RPC_PROTO=http
+      - DRONE_RPC_HOST=drone-server
+      - DRONE_RPC_SECRET=your-drone-rpc-secret
+      - DRONE_RUNNER_CAPACITY=2
+      - DRONE_RUNNER_NAME=drone-runner
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - drone-server
+    restart: unless-stopped
+    networks:
+      - devops_network
+
+  # Portainer - Docker management UI
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+    networks:
+      - devops_network
+
+  # Kasm Workspaces - Database
+  kasm_db:
+    image: postgres:12
+    container_name: kasm_db
+    environment:
+      POSTGRES_PASSWORD: kasm_db_password
+      POSTGRES_USER: kasm
+      POSTGRES_DB: kasm
+    volumes:
+      - kasm_db:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - devops_network
+
+  # Kasm Workspaces - Redis
+  kasm_redis:
+    image: redis:6.0.5-alpine
+    container_name: kasm_redis
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - devops_network
+
+  # Kasm Workspaces - Manager
+  kasm_manager:
+    image: kasmweb/kasm:1.14.0
+    container_name: kasm_manager
+    environment:
+      KASM_ROLE: manager
+      POSTGRES_USER: kasm
+      POSTGRES_PASSWORD: kasm_db_password
+      POSTGRES_DB: kasm
+      POSTGRES_HOST: kasm_db
+      REDIS_HOST: kasm_redis
+      PUBLIC_SERVER: true
+      API_SERVER_HOST: kasm_manager
+      APP_ICON: https://kasmweb.com/docs/latest/img/logo.svg
+      SMTP_HOST: ""
+    volumes:
+      - kasm_profiles:/profiles
+      - kasm_www:/www
+    ports:
+      - "3022:22"
+      - "8443:8443"
+    depends_on:
+      - kasm_db
+      - kasm_redis
+    restart: unless-stopped
+    networks:
+      - devops_network
+
+  # Kasm Workspaces - Agent
+  kasm_agent:
+    image: kasmweb/kasm:1.14.0
+    container_name: kasm_agent
+    environment:
+      KASM_ROLE: agent
+      MANAGER_HOST: kasm_manager
+      MANAGER_API_KEY: the_value_from_kasm_manager_logs
+      PUBLIC_SERVER: true
+      API_SERVER_HOST: kasm_manager
+    privileged: true
+    volumes:
+      - /dev/input:/dev/input
+      - kasm_profiles:/profiles
+    depends_on:
+      - kasm_manager
+    restart: unless-stopped
+    networks:
+      - devops_network
+
+  # Kasm Postman Workspace
+  kasm_postman:
+    image: kasmweb/postman:latest
+    container_name: kasm_postman
+    environment:
+      VNC_PW: password
+      KASM_SERVER: https://kasm_manager:8443
+      KASM_USER: admin@kasm.local
+      KASM_PASSWORD: password
+    depends_on:
+      - kasm_manager
+    restart: unless-stopped
+    networks:
+      - devops_network
