@@ -38,6 +38,7 @@ if ask_to_install "General apt packages"; then
     apt-get install -y default-jdk
     apt-get install -y gccgo-go
     apt-get install -y golang-go
+    apt-get install -y virt-manager
 
 fi
 
