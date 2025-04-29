@@ -80,3 +80,6 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 rustup target add x86_64-pc-windows-gnu
 sudo apt-get install -y gcc-mingw-w64-x86-64
+
+# Alias for creating directories
+echo "alias smd='sudo mkdir'" >> ~/.bashrc
