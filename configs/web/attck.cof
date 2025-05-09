@@ -1,0 +1,24 @@
+<VirtualHost *:443>
+    
+    ServerName *.attck.community
+    ServerAdmin <example@change.me>
+    DocumentRoot /var/www/apps/attck/templates
+
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
+    SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+
+    WSGIDaemonProcess attck user=www-data group=www-data threads=5 home=/var/www/apps/attck
+    WSGIScriptAlias / /var/www/apps/attck/attck.wsgi
+
+
+    <Directory /var/www/apps/attck/templates>
+        WSGIProcessGroup attck
+        WSGIApplicationGroup %{GLOBAL}
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
