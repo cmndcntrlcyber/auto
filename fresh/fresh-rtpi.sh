@@ -75,12 +75,15 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plug
 echo "Setting up RTPI environment:"
 echo "-------------------------------------"
 # Clone common red team tools repositories
-mkdir -p /opt/red-team-tools
-cd /opt/red-team-tools
+mkdir -p /opt/rtpi
+cd /opt/rtpi
 
 # Clone some useful offensive security tools
 git clone https://github.com/BC-SECURITY/Empire.git
 git clone https://github.com/PowerShellMafia/PowerSploit.git
 git clone https://github.com/S3cur3Th1sSh1t/WinPwn.git
+
+# Get certs for Apps
+bash ../maintainers/certbot.sh
 
 echo "RTPI Environment Setup Complete"

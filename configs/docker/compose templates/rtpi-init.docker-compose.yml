@@ -1,0 +1,175 @@
+version: '3.8'
+
+services:
+  # Kasm Workspaces main server
+  kasm_db:
+    container_name: kasm_db
+    image: postgres:12
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: kasmdb_password
+      POSTGRES_USER: kasmdb
+      POSTGRES_DB: kasm
+    volumes:
+      - kasm_db_data:/var/lib/postgresql/data
+    networks:
+      - kasm_network
+
+  kasm:
+    container_name: kasm
+    image: kasmweb/kasm:${KASM_VERSION:-latest}
+    restart: unless-stopped
+    environment:
+      - PUBLIC_IP=${PUBLIC_IP:-127.0.0.1}
+      - DB_HOST=kasm_db
+      - DB_NAME=kasm
+      - DB_USER=kasmdb
+      - DB_PASS=kasmdb_password
+      - KASM_PORT=${KASM_PORT:-443}
+      - DB_PORT=5432
+    ports:
+      - "${KASM_PORT:-443}:443"
+    volumes:
+      - /dev/shm:/dev/shm
+      - kasm_profiles:/profiles
+      - kasm_data:/opt/kasm/current/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - kasm_db
+    networks:
+      - kasm_network
+
+  # Portainer for container management
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    ports:
+      - "${PORTAINER_PORT:-9000}:9000"
+    networks:
+      - portainer_network
+
+  # Nginx Proxy Manager
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"      # Admin UI
+      - "8443:443"   # HTTPS (changed port to avoid conflict with Kasm)
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+    networks:
+      - kasm_network
+
+  # Evilginx2 in Kasm Workspace
+  evilginx2-workspace:
+    image: kasmweb/ubuntu-focal-desktop:1.14.0
+    container_name: evilginx2-workspace
+    restart: unless-stopped
+    ports:
+      - "6901:6901"  # Kasm Web interface for evilginx2
+    environment:
+      - VNC_PW=${WORKSPACE_PASSWORD:-password123}
+      - KASM_USER=evilginx_user
+    volumes:
+      - evilginx2_workspace_data:/home/kasm-user/data
+      - ./setup-evilginx2.sh:/dockerstartup/setup-evilginx2.sh
+    networks:
+      - kasm_network
+      - hack_network
+
+  # Gophish in Kasm Workspace
+  gophish-workspace:
+    image: kasmweb/ubuntu-focal-desktop:1.14.0
+    container_name: gophish-workspace
+    restart: unless-stopped
+    ports:
+      - "6902:6901"  # Kasm Web interface for gophish
+    environment:
+      - VNC_PW=${WORKSPACE_PASSWORD:-password123}
+      - KASM_USER=gophish_user
+    volumes:
+      - gophish_workspace_data:/home/kasm-user/data
+      - ./setup-gophish.sh:/dockerstartup/setup-gophish.sh
+    networks:
+      - kasm_network
+      - hack_network
+
+  # Standalone Evilginx2 service
+  evilginx2:
+    container_name: evilginx2
+    build:
+      context: ./evilginx2
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "${EVILGINX2_HTTP_PORT:-8880}:80"
+      - "${EVILGINX2_HTTPS_PORT:-8443}:443"
+      - "5353:53/udp"
+    volumes:
+      - evilginx2_data:/root/.evilginx
+    networks:
+      - hack_network
+
+  # Standalone Gophish service
+  gophish:
+    container_name: gophish
+    build:
+      context: ./gophish
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${GOPHISH_ADMIN_PORT:-3333}:3333"
+      - "${GOPHISH_PHISH_PORT:-8080}:8080"
+    volumes:
+      - gophish_data:/opt/gophish/data
+    networks:
+      - hack_network
+
+  # Axiom (as a service)
+  axiom:
+    container_name: axiom
+    image: ubuntu:20.04
+    platform: linux/amd64
+    restart: unless-stopped
+    command: >
+      bash -c "apt update && apt install -y git curl sudo golang wget zip unzip lsb-release && 
+      git clone https://github.com/pry0cc/axiom ~/.axiom/ && cd && 
+      chmod +x ~/.axiom/interact/axiom-configure && ~/.axiom/interact/axiom-configure --docker && 
+      tail -f /dev/null"
+    volumes:
+      - axiom_data:/root/.axiom
+    networks:
+      - hack_network
+
+networks:
+  kasm_network:
+    driver: bridge
+  portainer_network:
+    driver: bridge
+  hack_network:
+    driver: bridge
+
+volumes:
+  kasm_db_data:
+  kasm_profiles:
+  kasm_data:
+  portainer_data:
+  npm_data:
+  npm_letsencrypt:
+  evilginx2_workspace_data:
+  gophish_workspace_data:
+  evilginx2_data:
+  gophish_data:
+  axiom_data:
