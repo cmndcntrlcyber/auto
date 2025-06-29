@@ -1,16 +1,256 @@
-from subprocess import Popen, PIPE
+"""
+Secure Execution Environment Class
+
+This module provides a secure, threaded execution environment for running
+system commands with proper isolation, timeout handling, and output capture.
+
+Author: Security Automation Team
+Version: 1.1.0
+License: MIT
+"""
+
+import threading
+import time
+import signal
+import os
+from subprocess import Popen, PIPE, TimeoutExpired
+from typing import Optional, Dict, List, Union
 
 
 class SecureExecutionEnvironment(threading.Thread):
-
-    def __init__(self, command):
+    """
+    A secure execution environment that runs system commands in a separate thread
+    with proper timeout handling, output capture, and security controls.
+    
+    This class extends threading.Thread to provide non-blocking command execution
+    with comprehensive error handling and security features.
+    """
+    
+    def __init__(self, command: Union[str, List[str]], timeout: int = 30, 
+                 working_directory: Optional[str] = None, 
+                 environment_vars: Optional[Dict[str, str]] = None,
+                 capture_output: bool = True):
+        """
+        Initialize the SecureExecutionEnvironment
+        
+        Args:
+            command (Union[str, List[str]]): Command to execute (string or list of arguments)
+            timeout (int): Maximum execution time in seconds (default: 30)
+            working_directory (str, optional): Working directory for command execution
+            environment_vars (Dict[str, str], optional): Additional environment variables
+            capture_output (bool): Whether to capture stdout and stderr (default: True)
+        """
         super().__init__()
         self.command = command
-        self.output = None
-
+        self.timeout = timeout
+        self.working_directory = working_directory
+        self.environment_vars = environment_vars or {}
+        self.capture_output = capture_output
+        
+        # Output storage
+        self.stdout = None
+        self.stderr = None
+        self.return_code = None
+        self.execution_time = 0
+        self.timed_out = False
+        self.error_message = None
+        
+        # Process reference for cleanup
+        self._process = None
+        self._start_time = None
+        
+        # Thread safety
+        self._lock = threading.Lock()
+        self._completed = threading.Event()
+        
     def run(self):
-        process = Popen(self.command, stdout=PIPE, stderr=PIPE, text=True)
-        (self.stdout, self.stderr) = process.communicate()
+        """
+        Execute the command in a secure environment
+        
+        This method is called when the thread starts and handles the actual
+        command execution with proper error handling and timeout management.
+        """
+        try:
+            self._start_time = time.time()
+            
+            # Prepare environment
+            env = os.environ.copy()
+            env.update(self.environment_vars)
+            
+            # Configure command execution
+            if isinstance(self.command, str):
+                # For shell commands, use shell=True with security considerations
+                cmd = self.command
+                use_shell = True
+            else:
+                # For command lists, don't use shell for better security
+                cmd = self.command
+                use_shell = False
+            
+            # Execute command with security settings
+            self._process = Popen(
+                cmd,
+                stdout=PIPE if self.capture_output else None,
+                stderr=PIPE if self.capture_output else None,
+                text=True,
+                shell=use_shell,
+                cwd=self.working_directory,
+                env=env,
+                # Security: Start new process group to prevent signal propagation
+                preexec_fn=os.setsid if os.name != 'nt' else None
+            )
+            
+            # Wait for completion with timeout
+            try:
+                self.stdout, self.stderr = self._process.communicate(timeout=self.timeout)
+                self.return_code = self._process.returncode
+                
+            except TimeoutExpired:
+                self.timed_out = True
+                self._terminate_process()
+                self.error_message = f"Command timed out after {self.timeout} seconds"
+                
+        except Exception as e:
+            self.error_message = f"Execution error: {str(e)}"
+            self.return_code = -1
+            
+        finally:
+            # Calculate execution time
+            if self._start_time:
+                self.execution_time = time.time() - self._start_time
+            
+            # Mark as completed
+            self._completed.set()
+    
+    def _terminate_process(self):
+        """
+        Safely terminate the running process
+        """
+        if self._process and self._process.poll() is None:
+            try:
+                # Try graceful termination first
+                self._process.terminate()
+                
+                # Wait a bit for graceful shutdown
+                try:
+                    self._process.wait(timeout=5)
+                except TimeoutExpired:
+                    # Force kill if graceful termination fails
+                    self._process.kill()
+                    self._process.wait()
+                    
+            except Exception as e:
+                self.error_message = f"Process termination error: {str(e)}"
+    
+    def get_output(self) -> Dict[str, Union[str, int, float, bool]]:
+        """
+        Get the execution results
+        
+        Returns:
+            Dict containing execution results with the following keys:
+            - stdout: Standard output (str or None)
+            - stderr: Standard error (str or None)
+            - return_code: Process return code (int or None)
+            - execution_time: Time taken to execute (float)
+            - timed_out: Whether execution timed out (bool)
+            - error_message: Error message if any (str or None)
+            - completed: Whether execution completed (bool)
+        """
+        with self._lock:
+            return {
+                'stdout': self.stdout,
+                'stderr': self.stderr,
+                'return_code': self.return_code,
+                'execution_time': self.execution_time,
+                'timed_out': self.timed_out,
+                'error_message': self.error_message,
+                'completed': self._completed.is_set()
+            }
+    
+    def wait_for_completion(self, timeout: Optional[float] = None) -> bool:
+        """
+        Wait for the command execution to complete
+        
+        Args:
+            timeout (float, optional): Maximum time to wait in seconds
+            
+        Returns:
+            bool: True if execution completed, False if timeout occurred
+        """
+        return self._completed.wait(timeout)
+    
+    def is_running(self) -> bool:
+        """
+        Check if the command is still running
+        
+        Returns:
+            bool: True if command is still executing
+        """
+        return self.is_alive() and not self._completed.is_set()
+    
+    def force_stop(self):
+        """
+        Force stop the execution
+        """
+        if self.is_running():
+            self._terminate_process()
+    
+    def get_status(self) -> str:
+        """
+        Get current execution status
+        
+        Returns:
+            str: Current status ('running', 'completed', 'timed_out', 'error')
+        """
+        if not self._completed.is_set():
+            return 'running'
+        elif self.timed_out:
+            return 'timed_out'
+        elif self.error_message:
+            return 'error'
+        else:
+            return 'completed'
 
-    def get_output(self):
-        return {'stdout': self.stdout, 'stderr': self.stderr}
+
+# Example usage and testing functions
+def example_usage():
+    """
+    Example usage of SecureExecutionEnvironment
+    """
+    print("SecureExecutionEnvironment Example Usage")
+    print("=" * 50)
+    
+    # Example 1: Simple command
+    print("\n1. Simple command execution:")
+    executor = SecureExecutionEnvironment(['echo', 'Hello, World!'])
+    executor.start()
+    executor.wait_for_completion()
+    
+    result = executor.get_output()
+    print(f"Output: {result['stdout'].strip()}")
+    print(f"Status: {executor.get_status()}")
+    
+    # Example 2: Command with timeout
+    print("\n2. Command with timeout:")
+    executor2 = SecureExecutionEnvironment(['sleep', '2'], timeout=1)
+    executor2.start()
+    executor2.wait_for_completion()
+    
+    result2 = executor2.get_output()
+    print(f"Timed out: {result2['timed_out']}")
+    print(f"Status: {executor2.get_status()}")
+    
+    # Example 3: Command with error
+    print("\n3. Command with error:")
+    executor3 = SecureExecutionEnvironment(['nonexistent_command'])
+    executor3.start()
+    executor3.wait_for_completion()
+    
+    result3 = executor3.get_output()
+    print(f"Return code: {result3['return_code']}")
+    print(f"Error: {result3['stderr']}")
+    print(f"Status: {executor3.get_status()}")
+
+
+if __name__ == "__main__":
+    example_usage()
