@@ -75,6 +75,19 @@ volumes:
       type: none
       device: /mnt/docker/volumes/portainer_data/_data
       o: bind
+  # RTPI-PEN volumes
+  rtpi-pen-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /mnt/docker/volumes/rtpi-pen-data/_data
+      o: bind
+  rtpi-pen-tools:
+    driver: local
+    driver_opts:
+      type: none
+      device: /mnt/docker/volumes/rtpi-pen-tools/_data
+      o: bind
 
 services:
   # Docker stack
@@ -276,3 +289,42 @@ services:
         ipv4_address: 172.20.0.2
     environment:
       - REDIS_PASSWORD=sysreptorredispassword
+
+  # RTPI-PEN Custom Service
+  rtpi-pen:
+    build:
+      context: ../dockerfiles/RTPI-PEN
+      dockerfile: Dockerfile
+    image: rtpi-pen:latest
+    container_name: rtpi-pen
+    restart: unless-stopped
+    networks:
+      kasm_default_network:
+        ipv4_address: 172.18.0.10
+    ports:
+      - "6901:6901"  # VNC Web Interface
+      - "4444:4444"  # Metasploit listener port
+      - "8080:8080"  # Additional web service port
+    volumes:
+      - rtpi-pen-data:/home/kasm-user
+      - rtpi-pen-tools:/opt/rtpi
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # Docker socket for container management
+    environment:
+      - VNC_PW=rtpipassword
+      - KASM_PORT=6901
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6901/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      - kasm_db
+      - kasm_redis
+      - portainer
+    privileged: true  # Required for some penetration testing tools
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun  # For VPN capabilities

@@ -80,8 +80,6 @@ cd /opt/rtpi
 
 # Clone some useful offensive security tools
 git clone https://github.com/BC-SECURITY/Empire.git
-git clone https://github.com/PowerShellMafia/PowerSploit.git
-git clone https://github.com/S3cur3Th1sSh1t/WinPwn.git
 
 # Get certs for Apps
 bash ../maintainers/certbot.sh
