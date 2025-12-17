@@ -39,8 +39,31 @@ if ask_to_install "General apt packages"; then
     apt-get install -y gccgo-go
     apt-get install -y golang-go
     apt-get install -y virt-manager
+    apt-get install -y tilix
 
 fi
+
+# VS-Code Apt Installation
+## Install Signing Key
+sudo apt-get install wget gpg &&
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &&
+sudo install -D -o root -g root -m 644 microsoft.gpg /usr/share/keyrings/microsoft.gpg &&
+rm -f microsoft.gpg
+
+## Create Sources
+sudo touch /etc/apt/sources.list.d/vscode.sources
+sudo echo "Types: deb" > /etc/apt/sources.list.d/vscode.sources
+sudo echo "URIs: https://packages.microsoft.com/repos/code" >> /etc/apt/sources.list.d/vscode.sources
+sudo echo "Suites: stable" >> /etc/apt/sources.list.d/vscode.sources
+sudo echo "Components: main" >> /etc/apt/sources.list.d/vscode.sources
+sudo echo "Architectures: amd64,arm64,armhf" >> /etc/apt/sources.list.d/vscode.sources
+sudo echo "Signed-By: /usr/share/keyrings/microsoft.gpg" >> /etc/apt/sources.list.d/vscode.sources
+
+# Update cache and install
+sudo apt install apt-transport-https &&
+sudo apt update &&
+sudo apt install code # or code-insiders
+
 
 #Docker Installation
 if ask_to_install "Docker"; then
