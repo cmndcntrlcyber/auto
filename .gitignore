@@ -1,0 +1,147 @@
+# ============================================
+# Environment & Secrets
+# ============================================
+.env
+.env.*
+*.key
+*.pem
+*.crt
+*.pfx
+*.p12
+*.keystore
+*.jks
+credentials.*
+secrets.*
+secret_key*
+api_key*
+token.*
+
+# ============================================
+# SSH Keys
+# ============================================
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+id_ecdsa
+id_ecdsa.*
+id_dsa
+id_dsa.*
+*.pub
+authorized_keys
+known_hosts
+
+# ============================================
+# Logs
+# ============================================
+*.log
+logs/
+
+# ============================================
+# IR Triage Output
+# ============================================
+ir_triage_*/
+triage_data.json
+triage_report.txt
+findings.json
+
+# ============================================
+# Generator Output
+# ============================================
+*_corp_list.txt
+passwords.txt
+password_*.txt
+
+# ============================================
+# Database Files
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.sql.bak
+
+# ============================================
+# Python Artifacts
+# ============================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+.venv/
+venv/
+env/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ============================================
+# OS Generated Files
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ============================================
+# IDE / Editor
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+
+# ============================================
+# Claude Code Local Settings
+# ============================================
+.claude/settings.local.json
+
+# ============================================
+# Docker Sensitive
+# ============================================
+*.dockerenv
+docker-compose.override.yml
+
+# ============================================
+# Compiled / Binary
+# ============================================
+*.exe
+*.dll
+*.so
+*.o
+*.a
+*.out
+
+# ============================================
+# Terraform / Ansible / IaC Secrets
+# ============================================
+*.tfstate
+*.tfstate.*
+*.tfvars
+vault.yml
+*.vault
+
+# ============================================
+# Node.js
+# ============================================
+node_modules/
+package-lock.json
+yarn.lock
+
+# ============================================
+# Misc Sensitive Patterns
+# ============================================
+*.pcap
+*.cap
+*.dmp
+core
+core.*
+*.hccapx
+*.hashcat
+*.pot
+loot/
+exfil/

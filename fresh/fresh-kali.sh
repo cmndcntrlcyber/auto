@@ -107,89 +107,6 @@ check_requirements() {
     log_success "System requirements check passed"
 }
 
-# Create organized directory structure
-create_directory_structure() {
-    show_progress "Creating organized directory structure..."
-    
-    # Define directory structure
-    local directories=(
-        "$HOME/security"
-        "$HOME/security/vpns"
-        "$HOME/security/files"
-        "$HOME/security/github"
-        "$HOME/security/recon"
-        "$HOME/security/recon/wordlists"
-        "$HOME/security/targets"
-        "$HOME/security/targets/htb"
-        "$HOME/security/targets/thm"
-        "$HOME/security/targets/bounty"
-        "$HOME/security/targets/bounty/h1"
-        "$HOME/security/targets/bounty/bugcrowd"
-        "$HOME/security/payloads"
-        "$HOME/security/post"
-        "$HOME/security/post/win"
-        "$HOME/security/engaged"
-        "$HOME/security/engaged/admin"
-        "$HOME/security/engaged/osint"
-        "$HOME/security/engaged/recon"
-        "$HOME/security/engaged/targets"
-        "$HOME/security/engaged/targets/domain"
-        "$HOME/security/engaged/targets/domain/hostname"
-        "$HOME/security/engaged/targets/domain/exfil"
-        "$HOME/security/engaged/targets/domain/hostname/exfil"
-        "$HOME/security/engaged/screenshots"
-        "$HOME/security/engaged/payloads"
-        "$HOME/security/engaged/payloads/entry"
-        "$HOME/security/engaged/payloads/privesc"
-        "$HOME/security/engaged/payloads/persistence"
-        "$HOME/security/engaged/logs"
-        "/var/log/session"
-    )
-    
-    # Create directories with proper permissions
-    for dir in "${directories[@]}"; do
-        if [[ "$dir" == "/var/log/session" ]]; then
-            sudo mkdir -p "$dir"
-            sudo chown $USER:$USER "$dir"
-        else
-            mkdir -p "$dir"
-        fi
-        log_info "Created directory: $dir"
-    done
-    
-    # Create README file for the security directory
-    cat > "$HOME/security/README.md" << 'EOF'
-# Security Testing Directory Structure
-
-This directory contains organized folders for security testing activities.
-
-## Directory Structure
-
-- **vpns/**: VPN configurations and connection files
-- **files/**: General files and documents
-- **github/**: Cloned security tools and repositories
-- **recon/**: Reconnaissance tools and results
-- **targets/**: Target-specific information and results
-- **payloads/**: Exploit payloads and scripts
-- **post/**: Post-exploitation tools and scripts
-- **engaged/**: Active engagement materials and results
-
-## Usage Guidelines
-
-1. Keep all testing materials organized in appropriate directories
-2. Document all activities in the respective folders
-3. Maintain proper file naming conventions
-4. Regularly backup important findings
-5. Follow responsible disclosure practices
-
-## Security Reminder
-
-All tools and techniques should only be used on systems you own or have explicit permission to test.
-EOF
-    
-    log_success "Directory structure created successfully"
-}
-
 # Update system and install essential packages
 update_system() {
     show_progress "Updating system and installing essential packages..."
@@ -202,59 +119,26 @@ update_system() {
     
     # Install essential packages
     local essential_packages=(
-        "curl"
-        "wget"
-        "git"
-        "vim"
-        "nano"
-        "htop"
-        "tree"
-        "unzip"
-        "zip"
-        "p7zip-full"
-        "build-essential"
-        "software-properties-common"
-        "apt-transport-https"
-        "ca-certificates"
-        "gnupg"
-        "lsb-release"
-        "python3"
+        "jython"
         "python3-pip"
-        "python3-venv"
-        "python3-dev"
-        "default-jdk"
-        "nodejs"
-        "npm"
-        "golang-go"
-        "jq"
-        "yq"
-        "tmux"
-        "screen"
-        "net-tools"
-        "nmap"
-        "masscan"
-        "nikto"
-        "dirb"
-        "gobuster"
-        "ffuf"
-        "sqlmap"
-        "john"
-        "hashcat"
-        "hydra"
-        "medusa"
-        "metasploit-framework"
-        "burpsuite"
-        "wireshark"
-        "tcpdump"
-        "aircrack-ng"
-        "recon-ng"
-        "theharvester"
-        "maltego"
-        "spiderfoot"
-        "certbot"
-        "python3-certbot-apache"
+        "python-is-python3"
+        "python3-virtualenv"
         "tldr"
         "spice-vdagent"
+        "git"
+        "containerd"
+        "ca-certificates"
+        "certbot"
+        "curl"
+        "gnupg"
+        "lsb-release"
+        "snapd"
+        "npm"
+        "default-jdk"
+        "gccgo-go"
+        "golang-go"
+        "virt-manager"
+        "tilix"
     )
     
     log_info "Installing essential packages..."
@@ -356,101 +240,14 @@ install_development_tools() {
     go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
     go install github.com/projectdiscovery/httpx/cmd/httpx@latest
     go install github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest
+
+    # Install Claude Code
+    log_info "Installing Go development tools..."
+    curl -fsSL https://claude.ai/install.sh | bash
     
     log_success "Development environments installed"
 }
 
-# Clone essential security repositories
-clone_security_repositories() {
-    show_progress "Cloning essential security repositories..."
-    
-    cd "$HOME/security/github"
-    
-    # Define repositories to clone
-    local repositories=(
-        "https://github.com/swisskyrepo/PayloadsAllTheThings.git"
-        "https://github.com/1N3/IntruderPayloads.git"
-        "https://github.com/fuzzdb-project/fuzzdb.git"
-        "https://github.com/The-Art-of-Hacking/h4cker.git"
-        "https://github.com/OlivierLaflamme/Cheatsheet-God.git"
-        "https://github.com/danielmiessler/SecLists.git"
-        "https://github.com/almandin/fuxploider.git"
-        "https://github.com/EmpireProject/Empire.git"
-        "https://github.com/BloodHoundAD/BloodHound.git"
-        "https://github.com/SecureAuthCorp/impacket.git"
-        "https://github.com/samratashok/nishang.git"
-        "https://github.com/Tib3rius/AutoRecon.git"
-        "https://github.com/fin3ss3g0d/evilgophish.git"
-        "https://github.com/mttaggart/rustyneedle.git"
-        "https://github.com/carlospolop/PEASS-ng.git"
-        "https://github.com/rebootuser/LinEnum.git"
-        "https://github.com/PowerShellMafia/PowerSploit.git"
-        "https://github.com/bitsadmin/wesng.git"
-        "https://github.com/AonCyberLabs/Windows-Exploit-Suggester.git"
-        "https://github.com/rasta-mouse/Sherlock.git"
-    )
-    
-    # Clone repositories with error handling
-    for repo in "${repositories[@]}"; do
-        repo_name=$(basename "$repo" .git)
-        if [[ -d "$repo_name" ]]; then
-            log_info "Repository $repo_name already exists, updating..."
-            cd "$repo_name"
-            git pull
-            cd ..
-        else
-            log_info "Cloning $repo_name..."
-            if git clone "$repo"; then
-                log_info "✓ Successfully cloned $repo_name"
-            else
-                log_warn "✗ Failed to clone $repo_name"
-            fi
-        fi
-    done
-    
-    # Organize repositories
-    log_info "Organizing cloned repositories..."
-    
-    # Create symbolic links with shorter names
-    [[ -d "PayloadsAllTheThings" ]] && ln -sf PayloadsAllTheThings patt
-    [[ -d "IntruderPayloads" ]] && ln -sf IntruderPayloads intrude
-    [[ -d "SecLists" ]] && ln -sf SecLists seclists
-    
-    # Move wordlists to appropriate directory
-    if [[ -d "fuzzdb" ]]; then
-        cp -r fuzzdb/* "$HOME/security/recon/wordlists/" 2>/dev/null || true
-    fi
-    
-    if [[ -d "IntruderPayloads" ]]; then
-        cp -r IntruderPayloads/* "$HOME/security/recon/wordlists/" 2>/dev/null || true
-    fi
-    
-    if [[ -d "PayloadsAllTheThings" ]]; then
-        cp -r PayloadsAllTheThings/* "$HOME/security/recon/wordlists/" 2>/dev/null || true
-    fi
-    
-    if [[ -d "SecLists" ]]; then
-        cp -r SecLists/* "$HOME/security/recon/wordlists/" 2>/dev/null || true
-    fi
-    
-    # Move specific tools to appropriate directories
-    [[ -d "fuxploider" ]] && mv fuxploider "$HOME/security/recon/"
-    [[ -d "impacket" ]] && mv impacket "$HOME/security/recon/"
-    [[ -d "nishang" ]] && mv nishang "$HOME/security/post/win/"
-    [[ -d "AutoRecon" ]] && mv AutoRecon "$HOME/security/recon/"
-    [[ -d "rustyneedle" ]] && mv rustyneedle "$HOME/security/payloads/"
-    
-    # Install Python requirements for impacket
-    if [[ -d "$HOME/security/recon/impacket" ]]; then
-        log_info "Installing impacket requirements..."
-        cd "$HOME/security/recon/impacket"
-        pip3 install --user -r requirements.txt
-        python3 setup.py install --user
-        cd "$HOME/security/github"
-    fi
-    
-    log_success "Security repositories cloned and organized"
-}
 
 # Install additional applications
 install_applications() {
@@ -932,3 +729,4 @@ EOF
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     main "$@"
 fi
+║                                                              ║

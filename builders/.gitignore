@@ -1,1 +1,20 @@
+# Environment & Secrets
 .env
+.env.*
+*.key
+*.pem
+*.crt
+
+# Build artifacts
+*.tar.gz
+*.zip
+build/
+dist/
+output/
+
+# Docker secrets
+docker-compose.override.yml
+*.dockerenv
+
+# Logs
+*.log
